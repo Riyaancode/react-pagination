@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import "./App.css";
+import Pagination from "./Pagination";
 
 function App() {
   const [data, setData] = useState([]);
@@ -8,12 +9,18 @@ function App() {
   const lastIndex = currentPage * recordsPerPage;
   const startingIndex = lastIndex - recordsPerPage;
   const records = data.slice(startingIndex, lastIndex);
-  const totalPages = Math.ceil(data.length / recordsPerPage);
-  const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
+
+  const paginationRef = useRef(null);
   useEffect(() => {
     fetchData();
-    // console.log(pageNumbers);
   }, []);
+
+  useEffect(() => {
+    if (paginationRef.current) {
+      paginationRef.current.update(currentPage);
+    }
+  }, [currentPage]);
+
   const fetchData = () => {
     fetch("https://jsonplaceholder.typicode.com/posts")
       .then((res) => {
@@ -26,28 +33,9 @@ function App() {
   const changeCurrPage = (num) => {
     setCurrentPage(num);
   };
-  const changeToPrevPage = () => {
-    setCurrentPage(currentPage - 1);
-  };
-  const changeToNextPage = () => {
-    setCurrentPage(currentPage + 1);
-  };
+
   return (
     <div className="App">
-      {/* <table>
-        <tr>
-          <th>ID</th>
-          <th>Title</th>
-          <th>Body</th>
-        </tr>
-        {records.map((post) => (
-          <tr>
-            <td>{post.id}</td>
-            <td>{post.title.slice(0, 10)}</td>
-            <td>{post.body.slice(0, 50)}</td>
-          </tr>
-        ))}
-      </table> */}
       <div className="max-w-screen-xl mx-auto px-4 md:px-8">
         <div className="max-w-full mt-5">
           <h3 className="text-gray-800 text-3xl font-bold lg:text-4xl">
@@ -83,62 +71,13 @@ function App() {
           </table>
         </div>
       </div>
-      <ol className="flex justify-center gap-1 text-xs font-medium my-4">
-        <li>
-          <button
-            onClick={changeToPrevPage}
-            className="inline-flex h-10 w-10 items-center justify-center bg-blue-600 text-white rounded border border-gray-100"
-          >
-            <span className="sr-only">Prev Page</span>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-            >
-              <path
-                fillRule="evenodd"
-                d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
-                clipRule="evenodd"
-              />
-            </svg>
-          </button>
-        </li>
-
-        {pageNumbers.map((num, indx) => (
-          <li key={indx}>
-            <button
-              onClick={() => changeCurrPage(num)}
-              className={`block h-10 w-10 rounded text-2xl border border-gray-100 text-center ${
-                currentPage === num ? "bg-blue-600 text-white" : ""
-              }`}
-            >
-              {num}
-            </button>
-          </li>
-        ))}
-
-        <li>
-          <button
-            onClick={changeToNextPage}
-            className="inline-flex h-10 w-10 items-center bg-blue-600 text-white justify-center rounded border border-gray-100"
-          >
-            <span className="sr-only">Next Page</span>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-            >
-              <path
-                fillRule="evenodd"
-                d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-                clipRule="evenodd"
-              />
-            </svg>
-          </button>
-        </li>
-      </ol>
+      <Pagination
+        ref={paginationRef}
+        currentPage={currentPage}
+        changeCurrPage={changeCurrPage}
+        totalData={data.length}
+        recordsPerPage={recordsPerPage}
+      />
     </div>
   );
 }
